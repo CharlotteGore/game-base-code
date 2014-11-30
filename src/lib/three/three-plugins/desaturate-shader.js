@@ -5,12 +5,11 @@ module.exports = function (THREE){
    * Full-screen textured quad shader
    */
 
-  THREE.CopyShader = {
+  THREE.DesaturateShader = {
 
     uniforms: {
 
-      "tDiffuse": { type: "t", value: null },
-      "opacity":  { type: "f", value: 1.0 }
+      "tDiffuse": { type: "t", value: null }
 
     },
 
@@ -29,8 +28,6 @@ module.exports = function (THREE){
 
     fragmentShader: [
 
-      "uniform float opacity;",
-
       "uniform sampler2D tDiffuse;",
 
       "varying vec2 vUv;",
@@ -38,7 +35,10 @@ module.exports = function (THREE){
       "void main() {",
 
         "vec4 texel = texture2D( tDiffuse, vUv );",
-        "gl_FragColor = opacity * texel;",
+        "float col;",
+
+        "col = (texel.r + texel.g + texel.b) / 3.0;",
+        "gl_FragColor = vec4(col,col,col, 1);",
 
       "}"
 

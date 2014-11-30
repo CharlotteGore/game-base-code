@@ -11358,6 +11358,8 @@ THREE.Loader.prototype = {
 
     }
 
+    m.texturesLoading = [];
+
     function create_texture( where, name, sourceFile, repeat, offset, wrap, anisotropy ) {
 
       var fullPath = texturePath + sourceFile;
@@ -11366,11 +11368,19 @@ THREE.Loader.prototype = {
 
       var loader = THREE.Loader.Handlers.get( fullPath );
 
+      var status = { id : fullPath, loaded : false };
+
+      m.texturesLoading.push(status);
+
       if ( loader !== null ) {
 
         texture = loader.load( fullPath );
 
+        status.loaded = true;
+
       } else {
+
+        m;
 
         texture = new THREE.Texture();
 
@@ -11398,10 +11408,10 @@ THREE.Loader.prototype = {
             texture.image = image;
 
           }
-
+          status.loaded = true;
           texture.needsUpdate = true;
 
-        } );
+        });
 
       }
 
@@ -11685,6 +11695,8 @@ THREE.Loader.prototype = {
 
     if ( m.DbgName !== undefined ) material.name = m.DbgName;
 
+    material.texturesLoading = m.texturesLoading;
+
     return material;
 
   }
@@ -11908,16 +11920,14 @@ THREE.JSONLoader = function ( showStatus ) {
 
 THREE.JSONLoader.prototype = Object.create( THREE.Loader.prototype );
 
-THREE.JSONLoader.prototype.load = function ( url, callback, texturePath ) {
-
-  var scope = this;
+THREE.JSONLoader.prototype.load = function ( url, callback, callbackProgress, texturePath) {
 
   // todo: unify load API to for easier SceneLoader use
 
   texturePath = texturePath && ( typeof texturePath === 'string' ) ? texturePath : this.extractUrlBase( url );
 
   this.onLoadStart();
-  this.loadAjaxJSON( this, url, callback, texturePath );
+  this.loadAjaxJSON( this, url, callback, texturePath, callbackProgress);
 
 };
 
@@ -25529,6 +25539,8 @@ THREE.WebGLProgram = ( function () {
       // And, color, for example is often automatically bound to index 0 so disabling it
 
       _gl.bindAttribLocation( program, 0, index0AttributeName );
+      //_gl.vertexAttribPointer(0, 3, _gl.FLOAT, false, 0, 0);
+      _gl.enableVertexAttribArray(0);
 
     }
 
