@@ -16,6 +16,7 @@
     "gm-gather": "~3.0.0",
     "green-mesa-backbone-events": "~1.0.2",
     "raf": "^2.0.4",
+    "sat": "^0.4.1",
     "underscore": "~1.6.0"
   }
 }

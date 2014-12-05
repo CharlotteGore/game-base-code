@@ -1,11 +1,15 @@
 var THREE = require('./lib/three/three.js');
 
+var SAT = require('sat');
+var HSHG = require('./lib/hshg');
+var satUtils = require('./lib/quads-to-sat.js');
+
 var tick = require('animation-loops');
 var gameTime = {
-  now : tick.now(),
-  start : tick.now()
+  now : .00025 * tick.now(),
+  start : .00025 * tick.now(),
+  delta : 0
 };
-
 
 var Detector = require('./lib/three/detector.js');
 var Stats = require('./lib/three/stats.min.js');
@@ -13,6 +17,9 @@ var Stats = require('./lib/three/stats.min.js');
 var Pipeline = require('./lib/pipeline.js');
 var assetLoader = require('./lib/load-all-assets.js');
 var inputs = require('./lib/input-aggregator.js');
+
+var createPlayer = require('./entities/player-example');
+var createDummy = require('./entities/dummy-example');
 
 function WebGLApplication ( element ){
 
@@ -30,31 +37,119 @@ function WebGLApplication ( element ){
 
   document.querySelector('header').style.display = "none";
 
+
+
   element.appendChild(this.initialisePipeline());
 
-  var mode = "loading";
-
   // load any assets...
+  /*
   assetLoader((function (err, assets){
 
-    mode = "loaded"; 
 
   }).bind(this));
+  */
+
+
+  var lastTick;
+  // container for collision detection responses...
+  var response = new SAT.Response();
+
+  // some material references...
+  var material = new THREE.MeshBasicMaterial({ ambient : 0xffffff });
+
+
+  // importing some example geometry... 
+  var collisionGeometryRaw = new THREE.JSONLoader().parse(require('./example-geometry/test-collision-mesh.js')).geometry;
+  var backGeo = new THREE.JSONLoader().parse(require('./example-geometry/background-mesh-raw.js')).geometry;
+  var superBack = new THREE.JSONLoader().parse(require('./example-geometry/super-back.js')).geometry;
+
+  var entityData = require('./example-geometry/entities.json');
+
+
+  var grid = new HSHG();
+  var sceneExtents = satUtils.generateEnvironmentColliders(collisionGeometryRaw, grid); // geometry, HSHG grid, isStatic
+
+  var entities = [];
+
+  
+  for (var i = 0; i < entityData.bones.length; i++){
+
+    var name = entityData.bones[i].name.split('.');
+    var entity = false;
+    var pos = entityData.bones[i].pos;
+
+    switch (name[0]){
+      case "player":
+        entity = createPlayer(this.scene);
+        break;
+      case "dummy":
+        entity = createDummy(this.scene, name[1]);
+        break;
+    }
+
+    entity.create(new THREE.Vector3(pos[0], pos[1], 0));
+    grid.addObject(entity.box);
+
+    entities.push(entity);
+
+  }
+  
+
+
+  this.scene.add( new THREE.Mesh(collisionGeometryRaw, material))
+  this.scene.add( new THREE.Mesh(backGeo, new THREE.MeshBasicMaterial({color : 0x555555})) )
+  this.scene.add( new THREE.Mesh(superBack, new THREE.MeshBasicMaterial({color : 0x333333})) )
+
+  this.camera.pivot(5,5, new THREE.Vector3(0,0,0));
 
   // add a tick handler. This is our 60fps. 
   tick.add((function tickHandler (elapsed){
 
+    this.pipe.render(this.postProcessing);
+
     stats.update();
 
-    gameTime.now = .00025 * (tick.now() - gameTime.start);
+    var now = .00025 * (tick.now() - gameTime.start);
+    gameTime.delta = now - gameTime.now;
+    gameTime.now = now;
 
-    if (mode === "loading"){
-      // update the loader...
-    } else if (mode === "loaded"){
-      // update the game or whatever
+    if(gameTime.delta * 25000 > 500){
+      return;
+    };
+
+    for (var i = 0; i < entities.length; i++){
+      entities[i].update(gameTime.now, gameTime.delta);
     }
 
-    this.pipe.render(this.postProcessing);
+    // now we update the grid... 
+    grid.update();
+
+    // now we get the pairs
+    var pairs = grid.queryForCollisionPairs();
+
+    pairs.forEach((function (pair){
+
+      var a, b;
+      // prepare for a new response...
+      response.clear();
+
+      if (pair[0]['static']){
+        b = pair[0]; a = pair[1];
+      } else {
+        a = pair[0]; b = pair[1];
+      }
+
+      var collision = SAT.testPolygonPolygon(a.collider, b.collider, response);
+
+      // report the collisions to the various entities...
+      if (collision){
+        if (a.resolveCollision) a.resolveCollision(b, response, gameTime.now);
+        if (b.resolveCollision) b.resolveCollision(a, response, gameTime.now);
+      }
+
+    }).bind(this));
+
+    this.camera.update(gameTime.now, elapsed);
 
   }).bind(this));
 
@@ -79,10 +174,8 @@ WebGLApplication.prototype = {
     this.renderer.setSize(width, height);
 
     // camera...
-
-    this.camera = new THREE.PerspectiveCamera( 25, width / height, 1, 3000 );
-    this.camera.position.z = 100;
-    this.camera.target = new THREE.Vector3( 0,0,0 );
+    this.camera = require('./lib/cameraman.js')(25, width/height, 1, 3000);
+    this.camera.setPosition(new THREE.Vector3(0,0,50));
 
     if (this.postProcessing){
       this.scene = new THREE.Scene();
@@ -92,7 +185,7 @@ WebGLApplication.prototype = {
     }
 
     // create rendering pipeline..
-    this.pipe = new Pipeline(this.renderer, this.scene, this.camera, this.glowScene, width, height);
+    this.pipe = new Pipeline(this.renderer, this.scene, this.camera.camera, this.glowScene, width, height);
 
     // disable right click..
     window.oncontextmenu = function (event) {
@@ -115,5 +208,6 @@ WebGLApplication.prototype = {
 }
 
 new WebGLApplication(document.getElementById('screen'));
+
 
 

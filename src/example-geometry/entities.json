@@ -1,0 +1,42 @@
+{
+
+	"metadata" :
+	{
+		"formatVersion" : 3.1,
+		"generatedBy"   : "Blender 2.65 Exporter",
+		"vertices"      : 0,
+		"faces"         : 0,
+		"normals"       : 0,
+		"colors"        : 0,
+		"uvs"           : [],
+		"materials"     : 0,
+		"morphTargets"  : 0,
+		"bones"         : 2
+	},
+
+	"scale" : 1.000000,
+
+	"materials" : [],
+
+	"vertices" : [],
+
+	"morphTargets" : [],
+
+	"normals" : [],
+
+	"colors" : [],
+
+	"uvs" : [[]],
+
+	"faces" : [],
+
+	"bones" : [{"parent":-1,"name":"dummy.1","pos":[5.55625,-5.68305,-7.36797e-07],"rotq":[0,0,0,1]},{"parent":-1,"name":"player","pos":[-5.71018,3.8694,1.12581e-07],"rotq":[0,0,0,1]}],
+
+	"skinIndices" : [],
+
+	"skinWeights" : [],
+
+	"animations" : []
+
+
+}
