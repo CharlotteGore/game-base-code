@@ -7,6 +7,7 @@ var satUtils = require('../lib/quads-to-sat');
 var createTween = require('../lib/create-tweener');
 var Easer = require('functional-easing').Easer;
 
+var createText = require('../lib/text-to-tex').createTextMesh;
 
 var dummyMaterial = new THREE.MeshBasicMaterial({
     color: 0x00ff00,
@@ -34,6 +35,10 @@ module.exports = function createDummy(scene, id){
 
     box['static'] = true;
 
+    var sign = createText('Hello You', 20, 'pt Lucida Grande', '#FFFFFF');
+    sign.position.set(-3,6, 0);
+    sign.scale.set(0.02, 0.02, 1);
+
     setPosition(new THREE.Vector3(0,0,0));
 
     var collided = false;
@@ -48,6 +53,7 @@ module.exports = function createDummy(scene, id){
       create : function (initialPosition){
         setPosition(initialPosition);
         scene.add(mesh);
+        scene.add(sign);
       },
       destroy : function (){
         scene.remove(mesh);

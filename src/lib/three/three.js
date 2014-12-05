@@ -11,7 +11,7 @@ require('./three-plugins/bloom-pass.js')(THREE);
 require('./three-plugins/shader-pass.js')(THREE);
 require('./three-plugins/render-pass.js')(THREE);
 require('./three-plugins/mask-pass.js')(THREE);
-//require('./three-plugins/bokeh-pass.js')(THREE);
+require('./three-plugins/bokeh-pass.js')(THREE);
 require('./three-plugins/selective-glow-pass.js')(THREE);
 require('./three-plugins/scanline-shader.js')(THREE);
 require('./three-plugins/invert-shader.js')(THREE);

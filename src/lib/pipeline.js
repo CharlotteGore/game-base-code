@@ -76,8 +76,6 @@ Pipeline.prototype = {
     this.passes.bloom = new THREE.BloomPass(1, 12.5, 2.0, 512);
     this.passes.bloom2 = new THREE.BloomPass(1, 11, 1.5, 512);
 
-    //this.passes.fxaa = new THREE.ShaderPass( THREE.FXAAShader );
-
     // built in passes...
     render = new THREE.RenderPass( this.scene, this.camera );
     glowRender = new THREE.RenderPass( this.glowScene, this.camera );

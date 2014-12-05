@@ -4,7 +4,7 @@ var THREE = require('./three/three.js');
 
 function createTextMesh (text, size, fontstr, col, blending){
 
-    var backgroundMargin = 50;
+    var backgroundMargin = 10;
 
     var canvas = document.createElement('canvas');
     
@@ -30,7 +30,8 @@ function createTextMesh (text, size, fontstr, col, blending){
     var material = new THREE.MeshBasicMaterial({
         map : texture,
         blending : (blending || THREE.AdditiveBlending),
-        transparent: true
+        transparent: true,
+        depthWrite: false
     });
     material.index0AttributeName = "position";
 

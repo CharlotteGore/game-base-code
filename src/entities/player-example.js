@@ -22,11 +22,17 @@ module.exports = function createPlayer(scene){
     var jumpEase = new Easer().using('out-expo');
     var tween = createTween(10, 30);
 
-    var geometry = new THREE.PlaneBufferGeometry(1, 1);
+    //var geometry = new THREE.PlaneBufferGeometry(1, 1);
+
+    var geometry = new THREE.CircleGeometry(0.5);
+
+
     var mesh = new THREE.Mesh(geometry, playerMaterial);
 
-    var collider = satUtils.planeBufferToPolygon(mesh, geometry);
+    var collider = new SAT.Circle(new SAT.Vector(0,0), 0.5);//satUtils.planeBufferToPolygon(mesh, geometry);
     var box = new THREE.Box3(new THREE.Vector3(0,0,0), new THREE.Vector3(0,0));
+
+    collider.isCircle = true;
 
     var velocity = new THREE.Vector3(0,0,0);
 
@@ -46,10 +52,25 @@ module.exports = function createPlayer(scene){
     var previousPosition = new THREE.Vector3();
     var direction = new THREE.Vector3();
 
+    var lineMaterial = new THREE.LineBasicMaterial({
+        color: 0xffffff,
+        lineWidth : 4
+    });
+
+    var lineGeo = new THREE.Geometry();
+    lineGeo.vertices.push(new THREE.Vector3(-0.5, 0, 0));
+    lineGeo.vertices.push(new THREE.Vector3(0.5,0, 0));
+
+    var line = new THREE.Line(lineGeo, lineMaterial);
+
+    //mesh.add(line);
+    line.position.set(0,-0.5,-0.2);
+
     var entity = {
       collider : collider,
       isPlayer : true,
       box : box,
+      mesh : mesh,
       create : function (initialPosition){
         setPosition(initialPosition);
         scene.add(mesh);
@@ -75,9 +96,7 @@ module.exports = function createPlayer(scene){
           if (progress === 1){
             launched = false;
             pressedUpAt = false;
-            playerMaterial.color = new THREE.Color(0x0000FF);
           } else {
-            playerMaterial.color = new THREE.Color(0xFF0000);
             velocity.y = tween(jumpEase(progress));
           }
           
@@ -121,36 +140,56 @@ module.exports = function createPlayer(scene){
           mesh.position.x -= (response.overlapV.x);
           mesh.position.y -= (response.overlapV.y);
 
-          if (!onGround){
+         // if (!onGround){
 
             // bounce effect!
 
-            direction.copy(velocity); //.normalize();
+         //   direction.copy(velocity); //.normalize();
 
-            var perp = new SAT.Vector().copy(response.overlapN); //.perp();
-            perp = new THREE.Vector3(perp.x, perp.y, 0);
+         //   var perp = new SAT.Vector().copy(response.overlapN); //.perp();
+         //   perp = new THREE.Vector3(perp.x, perp.y, 0);
 
-            direction.reflect(perp); //.normalize();
-             //var nvel = new THREE.Vector3(response.overlapN.x * 10, response.overlapN.y * 10, 0);
-           // nvel.reflect(perp);
+         //   direction.reflect(perp); //.normalize();
 
-            setVelocity(direction.multiplyScalar(0.75))
 
-          } else {
+        //    setVelocity(direction.multiplyScalar(0.75))
+
+         // } else {
 
             // subtract the collision from the velocity vector as well.. fixes sticky things...
 
             velocity.x -= (response.overlapV.x);
             velocity.y -= (response.overlapV.y);
 
-          }
+         // }
 
           var dp = response.overlapN.dot(down)
           if (dp > 0 && Math.acos(dp) < 0.3){
             if (!onGround){
-              //this.camera.shake(0.3, 0.3)
-              console.log('have hit the ground')
+
+              //console.log('have hit the ground')
+
             }
+              /*
+              var perp = new SAT.Vector().copy(response.overlapN).perp();
+
+              var bl = new SAT.Vector(-0.5, -0.5);
+              var br = new SAT.Vector(0.5, -0.5);
+
+              bl.projectN(perp);
+              br.projectN(perp);
+
+              if(bl.y < 0){
+                mesh.geometry.attributes.position.array[7] = -0.5 + (bl.y );
+                mesh.geometry.attributes.position.needsUpdate = true;
+              }
+
+              if (br.y < 0){
+
+                mesh.geometry.attributes.position.array[10] = -0.5 + (br.y );
+                mesh.geometry.attributes.position.needsUpdate = true;
+              }
+              */
             onGround = now;
           } 
 
@@ -185,7 +224,7 @@ module.exports = function createPlayer(scene){
 
       mesh.position.x = pos.x;
       mesh.position.y = pos.y;
-      mesh.position.z = pos.z;
+      mesh.position.z = -0.2;
 
       // update the detailed collider... (although for a simple plane like this we don't really need to..)
       collider.pos = new SAT.Vector(pos.x, pos.y)

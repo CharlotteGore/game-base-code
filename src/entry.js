@@ -55,13 +55,15 @@ function WebGLApplication ( element ){
   var response = new SAT.Response();
 
   // some material references...
-  var material = new THREE.MeshBasicMaterial({ ambient : 0xffffff });
+  var material = new THREE.MeshLambertMaterial({ ambient : 0xffffff, emissive : 0x333333 });
 
 
   // importing some example geometry... 
   var collisionGeometryRaw = new THREE.JSONLoader().parse(require('./example-geometry/test-collision-mesh.js')).geometry;
   var backGeo = new THREE.JSONLoader().parse(require('./example-geometry/background-mesh-raw.js')).geometry;
   var superBack = new THREE.JSONLoader().parse(require('./example-geometry/super-back.js')).geometry;
+  var topLayer = new THREE.JSONLoader().parse(require('./example-geometry/top-layer.js')).geometry;
+  var detail = new THREE.JSONLoader().parse(require('./example-geometry/detail-overlay.js')).geometry;
 
   var entityData = require('./example-geometry/entities.json');
 
@@ -81,6 +83,7 @@ function WebGLApplication ( element ){
     switch (name[0]){
       case "player":
         entity = createPlayer(this.scene);
+        entity.mesh.add(this.camera.camera);
         break;
       case "dummy":
         entity = createDummy(this.scene, name[1]);
@@ -93,12 +96,27 @@ function WebGLApplication ( element ){
     entities.push(entity);
 
   }
+
+  var glowball = new THREE.Mesh(new THREE.CircleGeometry(0.1), new THREE.MeshBasicMaterial({color : 0xccccff}));
+  this.glowScene.add(glowball);
+  glowball.position.set(-3.4,1.8,0.01);
   
 
 
-  this.scene.add( new THREE.Mesh(collisionGeometryRaw, material))
-  this.scene.add( new THREE.Mesh(backGeo, new THREE.MeshBasicMaterial({color : 0x555555})) )
-  this.scene.add( new THREE.Mesh(superBack, new THREE.MeshBasicMaterial({color : 0x333333})) )
+  this.scene.add( new THREE.Mesh(detail, material))
+  this.scene.add( new THREE.Mesh(backGeo, new THREE.MeshLambertMaterial({ambient : 0x555555})))
+  this.scene.add( new THREE.Mesh(superBack, new THREE.MeshLambertMaterial({ambient : 0x333344})))
+  this.scene.add( new THREE.Mesh(topLayer, new THREE.MeshLambertMaterial({ambient : 0x333355})))
+
+  var light = new THREE.PointLight(0xccccff);
+  light.intensity = 0.4;
+  light.distance = 10
+  light.position.set(-3.4,1.8,3);
+
+  this.scene.add(light)
+
+  var light = new THREE.AmbientLight( 0x404040 ); // soft white light
+  this.scene.add( light );
 
   this.camera.pivot(5,5, new THREE.Vector3(0,0,0));
 
@@ -139,7 +157,19 @@ function WebGLApplication ( element ){
         a = pair[0]; b = pair[1];
       }
 
-      var collision = SAT.testPolygonPolygon(a.collider, b.collider, response);
+      if (a.collider.isCircle){
+
+        var collision = SAT.testCirclePolygon(a.collider, b.collider, response);
+
+      } else if (b.collider.isCircle) {
+
+        var collision = SAT.testPolygonCircle(a.collider, b.collider, response);
+
+      } else {
+
+        var collision = SAT.testPolygonPolygon(a.collider, b.collider, response);
+
+      }
 
       // report the collisions to the various entities...
       if (collision){
@@ -175,7 +205,7 @@ WebGLApplication.prototype = {
 
     // camera...
     this.camera = require('./lib/cameraman.js')(25, width/height, 1, 3000);
-    this.camera.setPosition(new THREE.Vector3(0,0,50));
+    this.camera.setPosition(new THREE.Vector3(0,0,30));
 
     if (this.postProcessing){
       this.scene = new THREE.Scene();
