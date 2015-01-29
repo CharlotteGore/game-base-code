@@ -108,7 +108,7 @@ Pipeline.prototype = {
     composer.addPass( this.passes.desat);
     composer.addPass( copy );
 
-    this.passes.scan.enabled = false;
+    this.passes.scan.enabled = true;
     this.passes.invert.enabled = false;
     this.passes.desat.enabled = false;
 

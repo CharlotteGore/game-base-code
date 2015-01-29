@@ -37,14 +37,26 @@ function loadAllGameAssets (done){
   });
   */
 
-  /*
+  
   // loading a texture..
+ /*
+  gathering.task(function (done, error){
+
+    var texture = THREE.ImageUtils.loadTexture('/images/map.png', THREE.UVMapping, function (){
+
+      assets.textures['test-map'] = texture;
+      done();
+
+    });
+
+  });
+
 
   gathering.task(function (done, error){
 
-    var texture = THREE.ImageUtils.loadTexture('/images/alpha-normal.png', {}, function (){
+    var texture = THREE.ImageUtils.loadTexture('/images/tiles-spaced.png', THREE.UVMapping, function (){
 
-      assets.textures['alpha-normal'] = texture;
+      assets.textures['dark-tiles'] = texture;
       done();
 
     });

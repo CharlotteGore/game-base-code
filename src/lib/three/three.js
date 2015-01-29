@@ -1,4 +1,4 @@
-var THREE = require('./three-v68.js');
+var THREE = require('./three-v70.js');
 
 // deferred renderer...
 
@@ -6,7 +6,7 @@ var THREE = require('./three-v68.js');
 require('./three-plugins/dynamictexture.js')(THREE);
 
 // passes..
-require('./three-plugins/plane-buffer-geometry.js')(THREE);
+//require('./three-plugins/plane-buffer-geometry.js')(THREE);
 require('./three-plugins/bloom-pass.js')(THREE);
 require('./three-plugins/shader-pass.js')(THREE);
 require('./three-plugins/render-pass.js')(THREE);

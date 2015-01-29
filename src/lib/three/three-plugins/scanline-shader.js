@@ -39,7 +39,7 @@ module.exports = function (THREE){
         "float dProd = 1.0;",
 
         "if (mod( p.y, 4.0 ) > 2. )",
-        "dProd *= 0.3;",
+        "dProd *= 0.8;",
 
         //"if (mod( p.x, 4.0 ) > 2. )",
         //"dProd *= 0.3;",
